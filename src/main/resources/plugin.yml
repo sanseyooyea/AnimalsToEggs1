@@ -1,0 +1,11 @@
+name: AnimalsToEggs
+version: ${version}
+main: company.maxmc.animalstoeggs.AnimalsToEggs
+prefix: AnimalsToEggs
+authors: [ SanseYooyea ]
+description: 将过多的动物清楚并概率变为动物蛋
+commands:
+  ate:
+    description: The main command of AnimalsToEggs
+    usage: /ate
+    permission: AnimalsToEggs.admin

@@ -1,0 +1,8 @@
+### Idea Gradle template
+### IDEA ###
+.idea
+*.iml
+
+### Gradle ###
+.gradle
+build

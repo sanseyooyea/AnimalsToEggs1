@@ -1,0 +1,11 @@
+#使用插件的世界
+worlds:
+  - world
+  - world_nether
+  - world_the_end
+#限制的最大动物数量
+max_animals: 15
+#动物变成动物蛋的概率,必须为1-100间的整数
+chance: 5
+#时间间隔，单位为秒
+interval: 600
