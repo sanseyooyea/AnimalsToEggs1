@@ -35,7 +35,7 @@ public final class AnimalsToEggs extends JavaPlugin {
         CleanTimer ct = new CleanTimer(dataMap);
 
         ScheduledExecutorService cleanTimer = Executors.newScheduledThreadPool(10);
-        cleanTimer.scheduleAtFixedRate(ct.cleanTask,Long.parseLong(dataMap.get("interval").toString()),
+        cleanTimer.scheduleAtFixedRate(ct.getCleanRunnable(),Long.parseLong(dataMap.get("interval").toString()),
                 Long.parseLong(dataMap.get("interval").toString()), TimeUnit.SECONDS);
 
     }

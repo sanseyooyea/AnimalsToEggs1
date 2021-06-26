@@ -33,7 +33,7 @@ public class PluginCommand implements CommandExecutor {
             }
             if (CLEAN_COMMAND.equalsIgnoreCase(args[0])){
                 CleanTimer ct = new CleanTimer(AnimalsToEggs.getDataMap());
-                Bukkit.getScheduler().runTaskLater(AnimalsToEggs.getINSTANCE(), ct.cleanTask, 20);
+                Bukkit.getScheduler().runTaskLater(AnimalsToEggs.getINSTANCE(), ct.getCleanRunnable(), 20);
             }
         }
         return true;
