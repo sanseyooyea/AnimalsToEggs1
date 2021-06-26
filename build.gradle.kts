@@ -27,6 +27,7 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<ProcessResources> {
     from(sourceSets.main.get().resources.srcDirs) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
         expand("version" to rootProject.version)
     }
 }

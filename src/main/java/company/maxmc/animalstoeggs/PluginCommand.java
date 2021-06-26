@@ -1,8 +1,8 @@
 package company.maxmc.animalstoeggs;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Animals;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,14 +29,13 @@ public class PluginCommand implements CommandExecutor {
         }
         if (args.length == 1) {
             if (RELOAD_COMMAND.equalsIgnoreCase(args[0])){
-
+                AnimalsToEggs.reloadConfig0();
             }
             if (CLEAN_COMMAND.equalsIgnoreCase(args[0])){
-                CleanTimer ct = new CleanTimer(AnimalsToEggs.dataMap);
-                ScheduledExecutorService ses = Executors.newScheduledThreadPool(10);
-                ses.schedule(ct.cleanTask, 1, TimeUnit.SECONDS);
+                CleanTimer ct = new CleanTimer(AnimalsToEggs.getDataMap());
+                Bukkit.getScheduler().runTaskLater(AnimalsToEggs.getINSTANCE(), ct.cleanTask, 20);
             }
         }
-        return false;
+        return true;
     }
 }

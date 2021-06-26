@@ -1,22 +1,29 @@
 package company.maxmc.animalstoeggs;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.material.MonsterEggs;
+import org.bukkit.material.SpawnEgg;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author SanseYooyea
  */
 public class CleanTimer {
 
-    private LinkedHashMap<String, Object> dataMap;
+    private Map<String, Object> dataMap;
 
-    public CleanTimer(LinkedHashMap<String, Object> dataMap){
+    public CleanTimer(Map<String, Object> dataMap) {
         this.dataMap = dataMap;
     }
 
@@ -25,45 +32,48 @@ public class CleanTimer {
         int maxAnimalAmount = Integer.parseInt(dataMap.get("max_animals").toString());
 
         List<World> enableWorld = getEnabledWorlds();
-        for (World world : enableWorld){
+        for (World world : enableWorld) {
             List<Entity> entities = Bukkit.getWorld(world.getName()).getEntities();
             for (Entity e : entities) {
-                if (e instanceof Animals){
+                if (e instanceof Animals) {
 
                     Animals a = (Animals) e;
-                    Entity[] entitysInTheChunk = a.getLocation().getChunk().getEntities();
-                    LinkedHashMap<Animals,Integer> animalsInTheChunk = getAnimalsInTheChunk(entitysInTheChunk);
+                    Entity[] entitiesInTheChunk = a.getLocation().getChunk().getEntities();
+                    Map<EntityType, Integer> animalsInTheChunk = getAnimalsInTheChunk(entitiesInTheChunk);
 
                     //启用清理程序
-                    for (int i = 0; i < animalsInTheChunk.size(); i++){
-                        if (animalsInTheChunk.get(i) >= maxAnimalAmount){
+                    for (Map.Entry<EntityType, Integer> entityTypeIntegerEntry : animalsInTheChunk.entrySet()) {
+                        if (entityTypeIntegerEntry.getValue() >= maxAnimalAmount) {
 
-                            Animals[] selectedAnimal = (Animals[]) animalsInTheChunk.keySet().toArray();
                             int amount = getEggAmountAfterChange();
-                            if (amount ==0){
+                            if (amount == 0) {
                                 continue;
                             }
-                            ItemStack animalEggsItemStack = new MonsterEggs(selectedAnimal[i].getEntityId()).toItemStack(amount);
 
-                            Chunk selectdChunk = selectedAnimal[i].getLocation().getChunk();
+                            ItemStack animalEggsItemStack = new ItemStack(Material.MONSTER_EGG);
+                            SpawnEggMeta meta = (SpawnEggMeta) animalEggsItemStack.getItemMeta();
+                            meta.setSpawnedType(entityTypeIntegerEntry.getKey());
+                            animalEggsItemStack.setAmount(amount);
+
+                            Chunk selectedChunk = e.getLocation().getChunk();
                             HashMap<Integer, ItemStack> leftThings = new HashMap<>();
-                            for (int x = 0; x <= 15; x++){
+                            for (int x = 0; x <= 15; x++) {
                                 for (int y = 0; y <= 15; y++) {
                                     for (int z = 0; z <= 255; z++) {
-                                        if ("CHEST".equals(selectdChunk.getBlock(x, y, z).getType().toString())){
-                                            Chest chest = (Chest) selectdChunk.getBlock(x, y, z);
+                                        if (Material.CHEST.equals(selectedChunk.getBlock(x, y, z).getType())) {
+                                            Chest chest = (Chest) selectedChunk.getBlock(x, y, z);
                                             boolean isChestHasEmptySpace = chest.getInventory().firstEmpty() != -1;
                                             HashMap<Integer, ItemStack> tempMap = chest.getInventory().addItem(animalEggsItemStack);
-                                            if(!isChestHasEmptySpace){
+                                            if (!isChestHasEmptySpace) {
                                                 continue;
                                             }
-                                            if (tempMap.size() > 0){
+                                            if (tempMap.size() > 0) {
                                                 leftThings.put(Integer.parseInt(tempMap.keySet().toArray()[0].toString()), tempMap.get(0));
                                             }
-                                            if (x == 15 && y == 15 && z==255 && leftThings.size() > 0){
-                                                selectedAnimal[0].getLocation().getBlock().setType(Material.CHEST);
-                                                Chest newChest = (Chest) selectedAnimal[0].getLocation().getBlock();
-                                                for (int k = 1; k < leftThings.size(); k++){
+                                            if (x == 15 && y == 15 && z == 255 && leftThings.size() > 0) {
+                                                e.getLocation().getBlock().setType(Material.CHEST);
+                                                Chest newChest = (Chest) e.getLocation().getBlock();
+                                                for (int k = 1; k < leftThings.size(); k++) {
                                                     newChest.getInventory().addItem(leftThings.get(k));
                                                 }
                                             }
@@ -78,24 +88,17 @@ public class CleanTimer {
         }
     };
 
-    private List<World> getEnabledWorlds(){
-        List<World> enabledWorlds = new ArrayList<>();
-        if (dataMap.get("worlds") instanceof ArrayList<?>){
-            for(Object o:(List< ? >) dataMap.get("worlds")){
-                enabledWorlds.add((World) o);
-            }
-        }
-        return enabledWorlds;
+    private List<World> getEnabledWorlds() {
+        return ((List<?>) dataMap.get("worlds")).stream().map((name) -> Bukkit.getWorld((String) name)).collect(Collectors.toList());
     }
 
-    private LinkedHashMap<Animals,Integer> getAnimalsInTheChunk(Entity[] entitysInTheChunk){
-        LinkedHashMap<Animals,Integer> animalsInTheChunk = new LinkedHashMap<>();
-        for (Entity ee : entitysInTheChunk) {
-            if (ee instanceof Animals) {
-                Animals aa = (Animals) ee;
-                int currentAmount = animalsInTheChunk.get(aa);
-                animalsInTheChunk.remove(aa);
-                animalsInTheChunk.put(aa, currentAmount + 1);
+    private Map<EntityType, Integer> getAnimalsInTheChunk(Entity[] entitiesInTheChunk) {
+        Map<EntityType, Integer> animalsInTheChunk = new HashMap<>();
+        for (Entity entity : entitiesInTheChunk) {
+            if (entity instanceof Animals) {
+                EntityType type = entity.getType();
+                int currentAmount = animalsInTheChunk.getOrDefault(type , 0);
+                animalsInTheChunk.put(type, currentAmount+1);
             }
         }
         return animalsInTheChunk;
@@ -106,8 +109,8 @@ public class CleanTimer {
         Random random = new Random();
         int chance = Integer.parseInt(dataMap.get("chance").toString());
         int maxNumber = 100 / chance;
-        if (random.nextInt(maxNumber) == 0){
-            amount ++;
+        if (random.nextInt(maxNumber) == 0) {
+            amount++;
         }
         return amount;
     }
