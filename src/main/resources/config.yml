@@ -4,8 +4,12 @@ worlds:
   - world_nether
   - world_the_end
 #限制的最大动物数量
-max_animals: 15
+max_animals: 8
 #动物变成动物蛋的概率,必须为1-100间的整数
 chance: 5
 #时间间隔，单位为秒
 interval: 600
+#程序开始提前通知时间，单位为秒
+advance_notice_time: 60
+#清理程序提醒语
+clean_message: "§a距离动物转变程序开始还有：%d 秒"

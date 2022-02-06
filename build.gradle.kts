@@ -3,10 +3,11 @@ plugins {
 }
 
 group = "company.maxmc"
-version = "1.0-SNAPSHOT"
+version = "1.02-SNAPSHOT"
 
 repositories {
     mavenLocal()
+    mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/public/") {
         name = "spigotmc-public"
     }

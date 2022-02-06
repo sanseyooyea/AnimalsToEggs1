@@ -1,9 +1,11 @@
 package company.maxmc.animalstoeggs;
 
+import company.maxmc.animalstoeggs.command.PluginCommand;
+import company.maxmc.animalstoeggs.timer.CleanTimer;
+import company.maxmc.animalstoeggs.timer.ShoutTimer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -15,57 +17,64 @@ import java.util.concurrent.TimeUnit;
  */
 public final class AnimalsToEggs extends JavaPlugin {
 
-    private static AnimalsToEggs INSTANCE;
+    private static AnimalsToEggs instance;
     private static Map<String, Object> dataMap = new HashMap<>();
 
     public AnimalsToEggs() {
-        INSTANCE = this;
+        instance = this;
     }
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
-        System.out.println("AnimalsToEggs is running...");
-        System.out.println("qq:1187586838");
+        getLogger().info("AnimalsToEggs 插件启动中...");
+        getLogger().info("插件作者：SanseYooyea");
+        getLogger().info("作者QQ：1187586838");
 
         Objects.requireNonNull(this.getCommand("ate")).setExecutor(new PluginCommand());
 
         saveDefaultConfig();
-        dataMap = loadDataMap();
+        loadDataMap();
+
         CleanTimer ct = new CleanTimer(dataMap);
-
-        ScheduledExecutorService cleanTimer = Executors.newScheduledThreadPool(10);
-        cleanTimer.scheduleAtFixedRate(ct.getCleanRunnable(),Long.parseLong(dataMap.get("interval").toString()),
-                Long.parseLong(dataMap.get("interval").toString()), TimeUnit.SECONDS);
-
+        ShoutTimer st = new ShoutTimer(dataMap);
+        ScheduledExecutorService cleanTimer = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService shoutTimer = Executors.newScheduledThreadPool(1);
+        long shoutTimerInitialDelay = Long.parseLong(dataMap.get("interval").toString())-Long.parseLong(dataMap.get("advance_notice_time").toString());
+        cleanTimer.scheduleAtFixedRate(ct.getCleanRunnable(),
+                Long.parseLong(dataMap.get("interval").toString()),
+                Long.parseLong(dataMap.get("interval").toString()),
+                TimeUnit.SECONDS);
+        shoutTimer.scheduleAtFixedRate(st.getShoutRunnable(),
+                shoutTimerInitialDelay,
+                Long.parseLong(dataMap.get("interval").toString()),
+                TimeUnit.SECONDS);
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
-        System.out.println("AnimalsToEggs is stopping...");
-        System.out.println("qq:1187586838");
+        getLogger().info("AnimalsToEggs 插件关闭中...");
+        getLogger().info("插件作者：SanseYooyea");
+        getLogger().info("作者QQ：1187586838");
     }
 
-    private Map<String, Object> loadDataMap(){
-        Map<String, Object> tempMap = new HashMap<>();
-        tempMap.put("worlds",getConfig().get("worlds"));
-        tempMap.put("max_animals",getConfig().get("max_animals"));
-        tempMap.put("chance",getConfig().get("chance"));
-        tempMap.put("interval",getConfig().get("interval"));
-        return tempMap;
+    public void loadDataMap(){
+        if (!dataMap.isEmpty()) {
+            dataMap.clear();
+        }
+
+        dataMap.put("worlds",getConfig().get("worlds"));
+        dataMap.put("max_animals",getConfig().get("max_animals"));
+        dataMap.put("chance",getConfig().get("chance"));
+        dataMap.put("interval",getConfig().get("interval"));
+        dataMap.put("advance_notice_time",getConfig().get("advance_notice_time"));
+        dataMap.put("clean_message",getConfig().get("clean_message"));
     }
 
     public static Map<String, Object> getDataMap() {
         return dataMap;
     }
 
-    public static void reloadConfig0() {
-        INSTANCE.reloadConfig();
-        dataMap = INSTANCE.loadDataMap();
-    }
-
-    public static AnimalsToEggs getINSTANCE() {
-        return INSTANCE;
+    public static AnimalsToEggs getInstance() {
+        return instance;
     }
 }
